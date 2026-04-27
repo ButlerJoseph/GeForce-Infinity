@@ -10,6 +10,7 @@ declare global {
             onConfigLoaded: (callback: (config: Config) => void) => void;
             getTailwindCss: () => string;
             reloadGFN: () => void;
+            openPlaytimeDetails: () => Promise<unknown>;
         };
     }
 }

@@ -34,6 +34,15 @@ export const UserMenu = () => {
         }
     };
 
+    const handleOpenPlaytime = async () => {
+        try {
+            await window.electronAPI.openPlaytimeDetails();
+        } catch (err) {
+            console.error("Failed to open playtime details:", err);
+            alert("Failed to open playtime details.");
+        }
+    };
+
     return (
         <>
             {user && (
@@ -75,12 +84,22 @@ export const UserMenu = () => {
 
                                 <li>
                                     <a
+                                        onClick={() => void handleOpenPlaytime()}
+                                        className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white cursor-pointer"
+                                    >
+                                        View playtime details
+                                    </a>
+                                </li>
+                                <li>
+                                    <a
                                         onClick={() =>
-                                            window.electronAPI.openExternal("https://infinity-syndicate.web.app")
+                                            window.electronAPI.openExternal(
+                                                "https://infinity-syndicate.web.app"
+                                            )
                                         }
                                         className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white cursor-pointer"
                                     >
-                                    Manage Account on Website
+                                        Manage Account on Website
                                     </a>
                                 </li>
                             </ul>

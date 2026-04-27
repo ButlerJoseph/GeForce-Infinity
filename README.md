@@ -22,6 +22,7 @@
 - **30FPS support (GFN performance or up required for some reason)**
 - **720p resolution support (GFN performance or up required for some reason)**
 - **Account system:** Users can now register and log in. After logging in, they are able to sync settings to and from the cloud.
+- **Playtime details:** Signed-in users can open their NVIDIA playtime details directly from the app.
 - **User dropdown menu in the header.**
 - **Inactivity notification:** Alerts you when you're about to be kicked due to inactivity.
 - **Automute:** Mutes the game when the window is not in focus.

@@ -40,6 +40,7 @@ contextBridge.exposeInMainWorld("electronAPI", {
     reloadGFN: () => {
         ipcRenderer.send("reload-gfn");
     },
+    openPlaytimeDetails: () => ipcRenderer.invoke("open-playtime-details"),
     copyToClipboard: (text: string) => clipboard.writeText(text),
     openExternal: (url: string) => shell.openExternal(url),
     checkForUpdates: () => ipcRenderer.invoke("check-for-updates"),
