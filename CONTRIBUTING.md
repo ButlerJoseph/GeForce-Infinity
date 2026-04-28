@@ -18,7 +18,29 @@ If this is your first time contributing:
     cd GeForce-Infinity
     ```
 
-3. Set the **original repository** as an upstream remote:
+3. **Install Bun** (required runtime for this project):
+
+    **Linux/macOS:**
+    ```bash
+    curl -fsSL https://bun.sh/install | bash
+    ```
+
+    **Windows (native):**
+    ```powershell
+    irm https://bun.sh/install.ps1 | iex
+    ```
+
+    After installation, restart your terminal or run the command shown at the end of the installer. Verify installation:
+    ```bash
+    bun --version
+    ```
+
+4. **Install project dependencies:**
+    ```bash
+    yarn install
+    ```
+
+5. Set the **original repository** as an upstream remote:
     ```bash
     git remote add upstream https://github.com/AstralVixen/GeForce-Infinity.git
     ```

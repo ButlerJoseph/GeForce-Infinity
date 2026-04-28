@@ -84,13 +84,29 @@ To get started with GeForce Infinity, follow these steps:
     cd GeForce-Infinity
     ```
 
-3. Install dependencies:
+3. **Install Bun** (required runtime):
+
+    ```bash
+    curl -fsSL https://bun.sh/install | bash
+    ```
+
+    **For Windows (native):**
+    ```powershell
+    irm https://bun.sh/install.ps1 | iex
+    ```
+
+    After installation, restart your terminal or run the command shown at the end of the installer to add Bun to your PATH. Verify installation:
+    ```bash
+    bun --version
+    ```
+
+4. Install dependencies:
 
     ```bash
     yarn install
     ```
 
-4. Run the application:
+5. Run the application:
     ```bash
     yarn start
     ```
