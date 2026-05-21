@@ -266,7 +266,7 @@ function setupWindowEvents(mainWindow: BrowserWindow) {
     );
 
     session.defaultSession.webRequest.onBeforeSendHeaders(
-        { urls: ["*://*.nvidiagrid.net/v2/*"] },
+        { urls: ["*://*.nvidiagrid.net/v2/*", "*://nvidiagrid.net/v2/*"] },
         (details, callback) => {
             const headers = details.requestHeaders;
 
@@ -353,6 +353,7 @@ registerCustomProtocols();
 export async function patchFetchForSessionRequest(mainWindow: Electron.CrossProcessExports.BrowserWindow) {
     await mainWindow.webContents.executeJavaScript(`(() => {
       const originalFetch = window.fetch.bind(window);
+      console.log("[GFN Infinity] Fetch patcher installed");
     
       function isTarget(urlString) {
         try {
@@ -364,47 +365,54 @@ export async function patchFetchForSessionRequest(mainWindow: Electron.CrossProc
       }
     
       async function tryPatchBody(initBody) {
-        if (!initBody) return undefined;
-    
-        const readText = () => {
-          if (typeof initBody === "string") return initBody;
-          if (initBody instanceof ArrayBuffer || ArrayBuffer.isView(initBody)) {
-            return new TextDecoder().decode(initBody);
-          }
-          // Other body types (Blob, FormData, URLSearchParams) are skipped here for brevity
-          return null;
-        };
-    
-        const text = readText();
-        if (!text) return undefined;
-    
-        const trimmed = text.trim();
-        if (!trimmed || (trimmed[0] !== "{" && trimmed[0] !== "[")) return undefined;
-    
-        let parsed;
-        try { parsed = JSON.parse(trimmed); } catch { return undefined; }
-    
-        const srd = parsed && parsed.sessionRequestData;
-        if (!srd || srd.clientRequestMonitorSettings == null) return undefined;
-        
-        const clientSettings = await electronAPI.getCurrentConfig();
-        
-        srd.clientRequestMonitorSettings = [
-          { 
-            widthInPixels: clientSettings.monitorWidth,  
-            heightInPixels: clientSettings.monitorHeight,
-            framesPerSecond: clientSettings.framesPerSecond, 
-            displayData: null, 
-            dpi: 0, 
-            hdr10PlusGamingData: null, 
-            monitorId: 0, 
-            positionX: 0, 
-            positionY: 0, 
-            sdrHdrMode: 0
-          }
-        ];
-    
-        return JSON.stringify(parsed);
+        try {
+          if (!initBody) return undefined;
+      
+          const readText = () => {
+            if (typeof initBody === "string") return initBody;
+            if (initBody instanceof ArrayBuffer || ArrayBuffer.isView(initBody)) {
+              return new TextDecoder().decode(initBody);
+            }
+            return null;
+          };
+      
+          const text = readText();
+          if (!text) return undefined;
+      
+          const trimmed = text.trim();
+          if (!trimmed || (trimmed[0] !== "{" && trimmed[0] !== "[")) return undefined;
+      
+          let parsed;
+          try { parsed = JSON.parse(trimmed); } catch { return undefined; }
+      
+          const srd = parsed && parsed.sessionRequestData;
+          if (!srd || srd.clientRequestMonitorSettings == null) return undefined;
+          
+          const clientSettings = await electronAPI.getCurrentConfig();
+          
+          const original = srd.clientRequestMonitorSettings[0] || {};
+          
+          srd.clientRequestMonitorSettings = [
+            { 
+              widthInPixels: clientSettings.monitorWidth,  
+              heightInPixels: clientSettings.monitorHeight,
+              framesPerSecond: clientSettings.framesPerSecond, 
+              displayData: original.displayData ?? null, 
+              dpi: original.dpi ?? 0, 
+              hdr10PlusGamingData: original.hdr10PlusGamingData ?? null, 
+              monitorId: original.monitorId ?? 0, 
+              positionX: original.positionX ?? 0, 
+              positionY: original.positionY ?? 0, 
+              sdrHdrMode: original.sdrHdrMode ?? 0
+            }
+          ];
+      
+          console.log("[GFN Infinity] Patched session request:", parsed);
+          return JSON.stringify(parsed);
+        } catch (err) {
+          console.error("[GFN Infinity] Failed to patch session request:", err);
+          return undefined;
+        }
       }
     
       const wrappedFetch = Object.assign(async function fetch(input, init) {
@@ -412,6 +420,8 @@ export async function patchFetchForSessionRequest(mainWindow: Electron.CrossProc
         if (!isTarget(url)) {
           return originalFetch(input, init);
         }
+    
+        console.log("[GFN Infinity] Intercepted session request to:", url);
     
         if (init && init.body != null) {
           const patched = await tryPatchBody(init.body);
