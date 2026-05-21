@@ -167,10 +167,11 @@ function registerShortcuts(mainWindow: BrowserWindow) {
 }
 
 function setupWindowEvents(mainWindow: BrowserWindow) {
-    mainWindow.webContents.on("did-finish-load", () => {
+    mainWindow.webContents.on("did-finish-load", async () => {
         const config = getConfig();
         replaceColorInCSS(mainWindow, config.accentColor);
         mainWindow.webContents.send("config-loaded", config);
+        await patchFetchForSessionRequest(mainWindow);
     });
 
     mainWindow.on("blur", () => {
@@ -349,7 +350,7 @@ app.commandLine.appendSwitch(
 overrideVersionInDev();
 registerCustomProtocols();
 
-async function patchFetchForSessionRequest(mainWindow: Electron.CrossProcessExports.BrowserWindow) {
+export async function patchFetchForSessionRequest(mainWindow: Electron.CrossProcessExports.BrowserWindow) {
     await mainWindow.webContents.executeJavaScript(`(() => {
       const originalFetch = window.fetch.bind(window);
     
@@ -457,8 +458,6 @@ app.whenReady().then(async () => {
     }, 15_000);
 
     registerShortcuts(mainWindow);
-
-    await patchFetchForSessionRequest(mainWindow);
 
     setupWindowEvents(mainWindow);
 });
