@@ -11,6 +11,6 @@ declare module "@t0msk/discord-rpc" {
             largeImageKey: string;
             largeImageText: string;
             startTimestamp: Date;
-        }) => void;
+        }) => Promise<void>;
     };
 }

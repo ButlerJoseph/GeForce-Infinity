@@ -17,16 +17,23 @@ let startTimestamp: Date;
 export function initRpcClient(start: Date, initialTitle: string) {
     startTimestamp = start;
     try {
-        rpcClient = new DiscordRPC.Client({ transport: "ipc" });
+        const client = new DiscordRPC.Client({ transport: "ipc" });
 
-        if (!rpcClient) return;
-
-        rpcClient.on("ready", () => {
+        client.on("ready", () => {
             console.log("Discord RPC connected");
+            rpcClient = client;
             updateActivity(initialTitle);
         });
 
-        rpcClient.login({ clientId }).catch(console.error);
+        client.on("disconnected", () => {
+            console.log("Discord RPC disconnected");
+            rpcClient = undefined;
+        });
+
+        client.login({ clientId }).catch((err: Error) => {
+            console.error("Discord RPC login failed:", err);
+            rpcClient = undefined;
+        });
     } catch (err) {
         console.error("RPC init error:", err);
     }
@@ -35,14 +42,12 @@ export function initRpcClient(start: Date, initialTitle: string) {
 export function updateActivity(gameTitle: string | null) {
     if (!rpcClient) return;
 
-    try {
-        rpcClient.setActivity({
-            state: gameTitle ? `Playing ${gameTitle}` : "Idling...",
-            largeImageKey: "infinity_logo",
-            largeImageText: "GeForce Infinity",
-            startTimestamp,
-        });
-    } catch (err) {
+    rpcClient.setActivity({
+        state: gameTitle ? `Playing ${gameTitle}` : "Idling...",
+        largeImageKey: "infinity_logo",
+        largeImageText: "GeForce Infinity",
+        startTimestamp,
+    }).catch((err: Error) => {
         console.error("Failed to set activity:", err);
-    }
+    });
 }
