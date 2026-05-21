@@ -41,7 +41,6 @@ export function createMainWindow(): BrowserWindow {
     }
 
     //mainWindow.webContents.openDevTools();
-    mainWindow.loadURL(GFN_WEBSITE);
     return mainWindow;
 }
 

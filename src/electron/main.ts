@@ -12,7 +12,7 @@ import fs from "fs";
 import { promises as fsPromises } from "fs";
 
 import { registerIpcHandlers } from "./ipc";
-import { createMainWindow } from "./managers/window";
+import { createMainWindow, GFN_WEBSITE } from "./managers/window";
 import { getConfig, saveConfig, loadConfig } from "./managers/config";
 import { createTray } from "./managers/tray";
 import { clientId, initRpcClient, updateActivity } from "./managers/discord";
@@ -471,6 +471,7 @@ app.whenReady().then(async () => {
     registerShortcuts(mainWindow);
 
     setupWindowEvents(mainWindow);
+    mainWindow.loadURL(GFN_WEBSITE);
 });
 
 app.on("will-quit", () => {
