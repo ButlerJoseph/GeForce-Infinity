@@ -351,6 +351,7 @@ overrideVersionInDev();
 registerCustomProtocols();
 
 export async function patchFetchForSessionRequest(mainWindow: Electron.CrossProcessExports.BrowserWindow) {
+    console.log("[GFN Infinity] Installing fetch patcher...");
     await mainWindow.webContents.executeJavaScript(`(() => {
       const originalFetch = window.fetch.bind(window);
       console.log("[GFN Infinity] Fetch patcher installed");
@@ -417,11 +418,11 @@ export async function patchFetchForSessionRequest(mainWindow: Electron.CrossProc
     
       const wrappedFetch = Object.assign(async function fetch(input, init) {
         const url = (typeof input === "string" || input instanceof URL) ? String(input) : input.url;
-        if (!isTarget(url)) {
+        const isTargetResult = isTarget(url);
+        console.log("[GFN Infinity] fetch:", isTargetResult ? "✓ TARGET" : "· skip", url);
+        if (!isTargetResult) {
           return originalFetch(input, init);
         }
-    
-        console.log("[GFN Infinity] Intercepted session request to:", url);
     
         if (init && init.body != null) {
           const patched = await tryPatchBody(init.body);
