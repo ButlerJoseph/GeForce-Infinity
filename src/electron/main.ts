@@ -273,38 +273,6 @@ function setupWindowEvents(mainWindow: BrowserWindow) {
         }
     );
 
-    session.defaultSession.webRequest.onBeforeSendHeaders(
-        { urls: ["*://*.nvidiagrid.net/v2/*", "*://nvidiagrid.net/v2/*"] },
-        (details, callback) => {
-            const headers = details.requestHeaders;
-
-            // Force nv-device-os and related platform headers
-            headers["nv-device-os"] = "WINDOWS";
-            headers["sec-ch-ua-platform"] = '"WINDOWS"';
-            headers["sec-ch-ua-platform-version"] = "14.0.0";
-
-           /* // Normalize and update the User-Agent if present
-            const uaKey =
-                "User-Agent" in headers
-                    ? "User-Agent"
-                    : "user-agent" in headers
-                        ? "user-agent"
-                        : null;
-
-            if (uaKey && typeof headers[uaKey] === "string") {
-                const ua = headers[uaKey] as string;
-                // (Mozilla/x.x) (...) -> Mozilla/x.x (Windows NT 10.0; Win64; x64)
-                const patched = ua.replace(
-                    /(Mozilla\/[\d.]+) \(.+?\)/,
-                    "$1 (Windows NT 10.0; Win64; x64)"
-                );
-                headers[uaKey] = patched;
-            }*/
-
-            callback({ requestHeaders: headers });
-        }
-    );
-
     mainWindow.webContents.setWindowOpenHandler(({ url }) => {
         if (url === "about:blank") {
             return {
