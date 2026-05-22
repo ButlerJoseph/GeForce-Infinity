@@ -167,11 +167,19 @@ function registerShortcuts(mainWindow: BrowserWindow) {
 }
 
 function setupWindowEvents(mainWindow: BrowserWindow) {
+    mainWindow.webContents.on("console-message", (event) => {
+        console.log(`[RENDERER] ${event.message}`);
+    });
+
     mainWindow.webContents.on("did-finish-load", async () => {
-        const config = getConfig();
-        replaceColorInCSS(mainWindow, config.accentColor);
-        mainWindow.webContents.send("config-loaded", config);
-        await patchFetchForSessionRequest(mainWindow);
+        try {
+            const config = getConfig();
+            replaceColorInCSS(mainWindow, config.accentColor);
+            mainWindow.webContents.send("config-loaded", config);
+            await patchFetchForSessionRequest(mainWindow);
+        } catch (err) {
+            console.error("[MAIN] did-finish-load error:", err);
+        }
     });
 
     mainWindow.on("blur", () => {
@@ -350,6 +358,14 @@ app.commandLine.appendSwitch(
 overrideVersionInDev();
 registerCustomProtocols();
 
+process.on("unhandledRejection", (reason) => {
+    console.error("[MAIN] Unhandled rejection:", reason);
+});
+
+process.on("uncaughtException", (error) => {
+    console.error("[MAIN] Uncaught exception:", error);
+});
+
 export async function patchFetchForSessionRequest(mainWindow: Electron.CrossProcessExports.BrowserWindow) {
     console.log("[GFN Infinity] Installing fetch patcher...");
     await mainWindow.webContents.executeJavaScript(`(() => {
@@ -359,7 +375,7 @@ export async function patchFetchForSessionRequest(mainWindow: Electron.CrossProc
       function isTarget(urlString) {
         try {
           const u = new URL(urlString, location.origin);
-          return /\\.nvidiagrid\\.net$/i.test(u.hostname) && /\\/v2\\/session/i.test(u.pathname);
+          return (u.hostname === "nvidiagrid.net" || /\\.nvidiagrid\\.net$/i.test(u.hostname)) && /\\/v2\\/session/i.test(u.pathname);
         } catch {
           return false;
         }
